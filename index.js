@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const port = 3000;
 const sqlite3 = require('sqlite3').verbose();
+const cookieParser = require('cookie-parser');
 
 // Creating the Express server
 const app = express();
@@ -16,7 +17,6 @@ let db = new sqlite3.Database('restaurant.db', (err) => {
   console.log('Connected to the SQlite database.');
 });
 
-
 // static resourse & templating engine
 app.use(express.static('public'));
 // Set EJS as templating engine
@@ -24,17 +24,27 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist/")));
+app.use(cookieParser());
 
 // routing path
 
 app.get('/', function (req, res) {
-    const query = 'SELECT * FROM category';
     const table_id = req.query.table_id || '';
-    db.all(query, (err, rows) => {
+    db.all('SELECT * FROM category', (err, rows) => {
+        res.render('home', { data: rows || [], table_id });
+    });
+});
+
+app.get('/menu', function (req, res) {
+    let table_id = req.query.table_id || req.cookies?.table_id || '';
+    if (req.query.table_id && req.query.table_id !== req.cookies?.table_id) {
+        res.cookie('table_id', req.query.table_id, { maxAge: 24 * 60 * 60 * 1000 }); // 1 day
+        table_id = req.query.table_id;
+    }
+    db.all('SELECT * FROM category', (err, rows) => {
         db.all('SELECT * FROM menu_items', (err2, menuItems) => {
             if (err) {
                 console.log(err.message);
-                // Pass empty array if error
                 return res.render('menu', { data: [], data2: [], table_id });
             }
             res.render('menu', { data: rows || [], data2: menuItems || [], table_id });
