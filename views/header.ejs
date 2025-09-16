@@ -12,12 +12,12 @@
         <div class="d-flex ms-5">
             <ul class="navbar-nav flex-row ms-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">หน้าหลัก</a>
+                    <a class="nav-link" href="/<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">หน้าหลัก</a>
                 </li>
             </ul>
             <ul class="navbar-nav flex-row ms-3">
                 <li class="nav-item">
-                    <a class="nav-link" href="/menu">เมนูทั้งหมด</a>
+                    <a class="nav-link" href="/menu<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">เมนูทั้งหมด</a>
                 </li>
             </ul>
         </div>
@@ -28,12 +28,12 @@
                 </a>
             </li>
             <li class="nav-item me-2">
-                <a class="nav-link" href="/history">
+                <a class="nav-link" href="/history<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">
                     <i class="bi bi-cart"></i> ประวัติการสั่งอาหาร
                 </a>
             </li>
             <li class="nav-item me-5">
-                <a class="nav-link" href="/payment">
+                <a class="nav-link" href="/payment<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">
                     <i class="bi bi-cart"></i> ชำระเงิน
                 </a>
             </li>
