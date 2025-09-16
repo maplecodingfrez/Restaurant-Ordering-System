@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serves</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <%- include('staffHeader.ejs') %>
+
+    <div class="container mt-4">
+        <h2>สิ่งที่ต้องเสิร์ฟ</h2>
+        <div class="accordion" id="serveAccordion">
+            <% 
+                let hasServe = false;
+                orders.forEach(function(order) { 
+                    const items = orderItems[order.order_id] || [];
+                    if (items.length === 0) return;
+                    hasServe = true;
+                });
+            %>
+            <% if (!hasServe) { %>
+                <div class="text-center text-muted py-5">ไม่มีรายการ</div>
+            <% } else { %>
+                <% orders.forEach(function(order, idx) { 
+                    const items = orderItems[order.order_id] || [];
+                    if (items.length === 0) return;
+                %>
+                    <div class="accordion-item mb-2">
+                        <h2 class="accordion-header" id="heading<%= order.order_id %>">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= order.order_id %>" aria-expanded="false" aria-controls="collapse<%= order.order_id %>">
+                                โต๊ะ: <%= order.table_number || order.table_id %> | ออเดอร์ #<%= order.order_id %>
+                            </button>
+                        </h2>
+                        <div id="collapse<%= order.order_id %>" class="accordion-collapse collapse" aria-labelledby="heading<%= order.order_id %>" data-bs-parent="#serveAccordion">
+                            <div class="accordion-body">
+                                <ul class="list-group mb-3">
+                                    <% itemsWithStatus2.forEach(function(item) { %>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                                            data-price="<%= item.price %>">
+                                            <span>
+                                                <%= item.item_name %>
+                                                <span class="badge bg-info ms-2"><%= item.size %></span>
+                                                <span class="badge bg-secondary ms-2">x<%= item.quantity %></span>
+                                            </span>
+                                            <!-- No status here -->
+                                        </li>
+                                    <% }); %>
+                                </ul>
+                                <button class="btn btn-success serve-done-btn" data-order-id="<%= order.order_id %>">เสิร์ฟเสร็จแล้ว</button>
+                                <button class="btn btn-outline-primary ms-2 print-receipt-btn"
+                                    data-table-number="<%= order.table_number || order.table_id %>"
+                                    data-order-id="<%= order.order_id %>"
+                                    data-order-time="<%= order.start_time || order.created_at %>">พิมพ์ใบเสร็จ</button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+    document.querySelectorAll('.serve-done-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.dataset.orderId;
+            // Show a temporary message
+            const msg = document.createElement('div');
+            msg.className = "alert alert-success mt-2";
+            msg.textContent = "กำลังอัปเดตสถานะ...";
+            btn.parentNode.appendChild(msg);
+
+            fetch('/serve-done/' + orderId, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        msg.textContent = "อัปเดตสถานะเสร็จสิ้น กำลังรีเฟรช...";
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        msg.className = "alert alert-danger mt-2";
+                        msg.textContent = "อัปเดตสถานะไม่สำเร็จ";
+                        setTimeout(() => msg.remove(), 1500);
+                    }
+                });
+        });
+    });
+
+    // Print receipt button
+    document.querySelectorAll('.print-receipt-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tableNumber = btn.dataset.tableNumber;
+            const orderId = btn.dataset.orderId;
+            const orderTime = btn.dataset.orderTime;
+            const orderBody = btn.closest('.accordion-body');
+            // Build receipt items: [quantity] menu_name [size] ... price
+            const itemsList = Array.from(orderBody.querySelectorAll('.list-group-item')).map(li => {
+                const qty = li.querySelector('.badge.bg-secondary')?.textContent.replace('x', '') || '';
+                const name = li.querySelector('span')?.childNodes[0]?.textContent.trim() || '';
+                const size = li.querySelector('.badge.bg-info')?.textContent || '';
+                const price = li.dataset.price ? Number(li.dataset.price).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
+                return `<div style="display:flex;justify-content:space-between;">
+                    <span>[${qty}] ${name} [${size}]</span>
+                    <span>${price} บาท</span>
+                </div>`;
+            }).join('');
+
+            // Create receipt content with small paper size
+            const receiptWindow = window.open('', '', 'width=350,height=600');
+            receiptWindow.document.write(`
+                <html>
+                <head>
+                    <title>ใบเสร็จ</title>
+                    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+                    <style>
+                        @media print {
+                            @page { size: 80mm auto; margin: 5mm; }
+                            body { width: 80mm !important; }
+                        }
+                        body { padding: 12px; font-family: sans-serif; width: 80mm; }
+                        h2 { margin-bottom: 12px; font-size: 1.2em; }
+                        .receipt-item { font-size: 1em; padding: 4px 0; display: flex; justify-content: space-between; }
+                        .text-end { font-size: 0.95em; }
+                    </style>
+                </head>
+                <body>
+                    <h2 class="text-center">ใบเสร็จ</h2>
+                    <div><strong>โต๊ะ:</strong> ${tableNumber}</div>
+                    <div><strong>หมายเลขออเดอร์:</strong> ${orderId}</div>
+                    <div><strong>เวลา:</strong> ${orderTime}</div>
+                    <hr>
+                    <div><strong>รายการอาหาร:</strong></div>
+                    ${itemsList}
+                    <hr>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            receiptWindow.document.close();
+        });
+    });
+
+    </script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    const socket = io();
+    socket.on('orderServed', function(data) {
+        // Reload serve page to show new served order
+        location.reload();
+    });
+    </script>
+</body>
+</html>

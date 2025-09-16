@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เมนูอาหาร</title>
+    <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
+    <script src="js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <%- include('header') %>
+    
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Table of Contents (left) -->
+            <div class="col-md-3 mb-3">
+                <div class="position-sticky" style="top: 80px;">
+                    <div class="list-group">
+                        <% data.forEach(function(item) { %>
+                            <a href="#section<%= item.category_id %>" class="list-group-item list-group-item-action"><%= item.category_name %></a>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+            <!-- Content (right) -->
+            <div class="col-md-9 border-start ps-4">
+                <% data.forEach(function(category) { %>
+                    <div id="section<%= category.category_id %>" class="mb-5" style="scroll-margin-top: 80px;">
+                        <h1 class="mb-4"><%= category.category_name %></h1>
+                        <hr>
+                        <div class="row">
+                            <% data2
+                                .filter(item => item.category_id === category.category_id)
+                                .forEach(function(item) { %>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100 menu-item-card"
+                                         data-menu-id="<%= item.menu_item_id %>"
+                                         data-name="<%= item.item_name %>"
+                                         data-img="/menu_items/<%= item.menu_item_id %>.jpg"
+                                         data-desc="<%= item.item_description %>"
+                                         data-price="<%= item.price %>">
+                                        <img src="/menu_items/<%= item.menu_item_id %>.jpg" class="card-img-top object-fit-cover" style="height: 200px; object-fit: cover;" alt="<%= item.menu_name %>">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%= item.item_name %></h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for menu item details -->
+    <div class="modal fade" id="menuItemModal" tabindex="-1" aria-labelledby="menuItemModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="menuItemModalLabel"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <img id="menuItemModalImg" src="" class="img-fluid mb-3 d-block mx-auto" style="height:220px; width:220px; object-fit:cover;" alt="">
+            <p class="fw-bold" id="menuItemModalPrice"></p>
+            <div class="mb-3 text-center">
+              <label class="form-label">ขนาด</label>
+              <select id="menuItemModalSize" class="form-select" style="width:140px; margin:0 auto;">
+                <option value="S">S (เล็ก)</option>
+                <option value="M">M (กลาง)</option>
+                <option value="L">L (ใหญ่)</option>
+              </select>
+            </div>
+            <div class="mb-3 text-center">
+              <label class="form-label">จำนวน</label>
+              <div class="d-flex justify-content-center">
+                <div class="input-group" style="width: 140px;">
+                  <button class="btn btn-outline-secondary" type="button" id="qtyDecrease">-</button>
+                  <input type="number" id="menuItemModalQty" class="form-control text-center" value="1" min="1" readonly>
+                  <button class="btn btn-outline-secondary" type="button" id="qtyIncrease">+</button>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary w-100" id="menuItemModalConfirm">ยืนยัน</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('cart.ejs') %>
+
+    <%- include('footer') %>
+
+    <script>
+document.querySelectorAll('.menu-item-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+        document.getElementById('menuItemModalLabel').textContent = card.dataset.name;
+        document.getElementById('menuItemModalImg').src = card.dataset.img;
+        document.getElementById('menuItemModalImg').alt = card.dataset.name;
+        document.getElementById('menuItemModalPrice').textContent = card.dataset.price ? 'ราคา: ' + card.dataset.price + ' บาท' : '';
+        document.getElementById('menuItemModalQty').value = 1;
+        document.getElementById('menuItemModalSize').value = "M";
+        document.getElementById('menuItemModalConfirm').dataset.menuId = card.dataset.menuId;
+        var modal = new bootstrap.Modal(document.getElementById('menuItemModal'));
+        modal.show();
+    });
+});
+
+// Only add event listeners if elements exist
+const qtyIncreaseBtn = document.getElementById('qtyIncrease');
+if (qtyIncreaseBtn) {
+    qtyIncreaseBtn.onclick = function() {
+        const qtyInput = document.getElementById('menuItemModalQty');
+        qtyInput.value = parseInt(qtyInput.value) + 1;
+    };
+}
+const qtyDecreaseBtn = document.getElementById('qtyDecrease');
+if (qtyDecreaseBtn) {
+    qtyDecreaseBtn.onclick = function() {
+        const qtyInput = document.getElementById('menuItemModalQty');
+        if (parseInt(qtyInput.value) > 1) {
+            qtyInput.value = parseInt(qtyInput.value) - 1;
+        }
+    };
+}
+const menuItemModalConfirmBtn = document.getElementById('menuItemModalConfirm');
+if (menuItemModalConfirmBtn) {
+    menuItemModalConfirmBtn.addEventListener('click', function() {
+        const qty = parseInt(document.getElementById('menuItemModalQty').value);
+        const name = document.getElementById('menuItemModalLabel').textContent;
+        const priceText = document.getElementById('menuItemModalPrice').textContent;
+        const price = priceText ? parseFloat(priceText.replace(/[^\d.]/g, '')) : 0;
+        const img = document.getElementById('menuItemModalImg').src;
+        const menu_item_id = this.dataset.menuId;
+        const size = document.getElementById('menuItemModalSize').value;
+
+        // Add to cart (merge if exists by menu_item_id and size)
+        const existing = cart.find(item => item.menu_item_id === menu_item_id && item.size === size);
+        if (existing) {
+            existing.qty += qty;
+        } else {
+            cart.push({ menu_item_id, name, qty, price, img, size });
+        }
+
+        saveCart();
+
+        // Remove focus before hiding modal to avoid aria-hidden warning
+        document.activeElement && document.getElementById('menuItemModal').contains(document.activeElement) && document.activeElement.blur();
+        bootstrap.Modal.getInstance(document.getElementById('menuItemModal')).hide();
+        updateCartWidget();
+    });
+}
+</script>
+</body>
+</html>
