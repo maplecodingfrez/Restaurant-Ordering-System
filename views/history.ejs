@@ -15,8 +15,7 @@
             <% if (orders.length === 0) { %>
                 <div class="text-center text-muted py-5">ไม่มีรายการ</div>
             <% } else { %>
-                <% orders.forEach(function(order, idx) { 
-                    if (table_id && (order.table_number || order.table_id) != table_id) return;
+                <% orders.forEach(function(order) { 
                     const items = orderItems[order.order_id] || [];
                     if (items.length === 0) return;
                 %>

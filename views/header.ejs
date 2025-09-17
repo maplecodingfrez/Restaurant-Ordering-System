@@ -5,6 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <!-- Add your CSS and JS links here -->
+    <style>
+        /* Hide the default "Powered by" label and frame */
+        #google_translate_element .goog-te-gadget {
+            font-size: 0;
+            padding: 0;
+            margin: 0;
+        }
+        #google_translate_element .goog-te-gadget .goog-te-combo {
+            font-size: 1rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background: #f8f9fa;
+        }
+        #google_translate_element img {
+            display: none !important;
+        }
+        body {
+            top: 0 !important;
+            position: static !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+        html {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+        }
+
+        body {
+            top: 0px !important;
+            }
+
+            body > .skiptranslate > iframe.skiptranslate {
+            display: none !important;
+            visibility: hidden !important;
+            }
+    </style>
 </head>
 <body>
 <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light border p-3">
@@ -22,6 +59,9 @@
             </ul>
         </div>
         <ul class="navbar-nav flex-row ms-auto align-items-center mb-0">
+            <li class="nav-item me-2">
+                <div id="google_translate_element"></div>
+            </li>
             <li class="nav-item me-2">
                 <a class="nav-link" href="#" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
                     <i class="bi bi-cart"></i> ตะกร้า
@@ -47,6 +87,35 @@
 </nav>
 
 <script>
+(function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let urlTableId = urlParams.get('table_id');
+    let storedTableId = localStorage.getItem('table_id');
+
+    if (urlTableId) {
+        if (storedTableId && storedTableId !== urlTableId) {
+            // Change the URL to match localStorage
+            const newUrl = window.location.pathname + '?table_id=' + storedTableId;
+            window.location.replace(newUrl);
+            return;
+        }
+        // If no localStorage, set it to URL value
+        if (!storedTableId) {
+            localStorage.setItem('table_id', urlTableId);
+        }
+    } else {
+        // If no table_id in URL, use localStorage or default to 0
+        if (!storedTableId) {
+            storedTableId = '0';
+            localStorage.setItem('table_id', storedTableId);
+        }
+        // Redirect to URL with table_id from localStorage
+        const newUrl = window.location.pathname + '?table_id=' + storedTableId;
+        window.location.replace(newUrl);
+    }
+})();
+</script>
+<script>
 window.tableId = window.tableId || localStorage.getItem('table_id');
 document.querySelectorAll('a.nav-link').forEach(link => {
     if (window.tableId && link.href && !link.href.includes('table_id=')) {
@@ -57,9 +126,21 @@ document.querySelectorAll('a.nav-link').forEach(link => {
         }
     }
 });
+
+// Google Translate widget always visible in navbar
+window.googleTranslateElementInit = function() {
+    new google.translate.TranslateElement({
+        pageLanguage: 'th',
+        includedLanguages: 'en,th,ja,zh-CN',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+    }, 'google_translate_element');
+};
+(function() {
+    var script = document.createElement('script');
+    script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    document.body.appendChild(script);
+})();
+
 </script>
-
-<!-- Add your other HTML content here -->
-
 </body>
 </html>

@@ -10,7 +10,7 @@ const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
 // Connect to SQLite database
-let db = new sqlite3.Database('restaurant.db', (err) => {
+let db = new sqlite3.Database(path.join(__dirname, 'restaurant.db'), (err) => {
   if (err) {
       return console.error(err.message);
   }
@@ -29,14 +29,14 @@ app.use(cookieParser());
 // routing path
 
 app.get('/', function (req, res) {
-    const table_id = req.query.table_id || '';
+    const table_id = req.query.table_id || 0;
     db.all('SELECT * FROM category', (err, rows) => {
         res.render('home', { data: rows || [], table_id });
     });
 });
 
 app.get('/menu', function (req, res) {
-    let table_id = req.query.table_id || req.cookies?.table_id || '';
+    let table_id = req.query.table_id || req.cookies?.table_id || 0;
     if (req.query.table_id && req.query.table_id !== req.cookies?.table_id) {
         res.cookie('table_id', req.query.table_id, { maxAge: 24 * 60 * 60 * 1000 }); // 1 day
         table_id = req.query.table_id;
@@ -74,7 +74,7 @@ app.get('/orders', function (req, res) {
 });
 
 app.get('/cashier', function (req, res) {
-    const table_id = req.query.table_id;
+    const table_id = req.query.table_id || 0;
     db.all('SELECT DISTINCT table_number FROM orders WHERE paid = 0 ORDER BY table_number', (err, rows) => {
         const tables = rows.map(row => row.table_number);
         db.all('SELECT * FROM payments ORDER BY paid_at DESC', (err2, payments) => {
@@ -127,7 +127,7 @@ app.post('/serve-done/:order_id', (req, res) => {
 
 app.post('/order', (req, res) => {
     const cart = req.body.cart;
-    const table_id = req.body.table_id;
+    const table_id = req.body.table_id || 0;
 
     if (!cart || !Array.isArray(cart) || cart.length === 0 || !table_id) {
         return res.json({ success: false });
@@ -159,24 +159,14 @@ app.post('/order', (req, res) => {
 });
 
 // HISTORY: Only show unpaid orders
-app.get('/history', function (req, res) {
-    const table_id = req.query.table_id;
-    let ordersQuery = 'SELECT * FROM orders WHERE paid = 0';
-    let params = [];
-
-    if (table_id) {
-        ordersQuery += ' AND table_number = ?';
-        params.push(table_id);
-    }
-    ordersQuery += ' ORDER BY order_id DESC';
-
-    db.all(ordersQuery, params, (err, orders) => {
+app.get('/history', (req, res) => {
+    const table_id = req.query.table_id || 0;
+    db.all('SELECT * FROM orders WHERE table_number = ? AND paid = 0 ORDER BY start_time DESC', [table_id], (err, orders) => {
         if (err) return res.render('history', { orders: [], orderItems: {}, table_id });
-
         db.all(`
             SELECT oi.*, mi.item_name, mi.price, s.description AS status_name
             FROM order_items oi
-            LEFT JOIN menu_items mi ON oi.menu_item_id = mi.menu_item_id
+            JOIN menu_items mi ON oi.menu_item_id = mi.menu_item_id
             LEFT JOIN item_status s ON oi.status_code = s.status_code
         `, (err2, items) => {
             const orderItems = {};
@@ -189,9 +179,29 @@ app.get('/history', function (req, res) {
     });
 });
 
+app.get('/order-history', function (req, res) {
+    const currentPage = Number(req.query.page) || 1;
+    db.all('SELECT * FROM orders ORDER BY start_time DESC', (err, orders) => {
+        if (err) return res.render('orderhistory', { orders: [], orderItems: {} });
+        db.all(`
+            SELECT oi.*, mi.item_name, mi.price, s.description AS status_name
+            FROM order_items oi
+            JOIN menu_items mi ON oi.menu_item_id = mi.menu_item_id
+            LEFT JOIN item_status s ON oi.status_code = s.status_code
+        `, (err2, items) => {
+            const orderItems = {};
+            items.forEach(item => {
+                if (!orderItems[item.order_id]) orderItems[item.order_id] = [];
+                orderItems[item.order_id].push(item);
+            });
+            res.render('orderhistory', { orders, orderItems, currentPage });
+        });
+    });
+});
+
 // PAYMENT: Only show unpaid orders and items
 app.get('/payment', function (req, res) {
-    const table_id = req.query.table_id;
+    const table_id = req.query.table_id || 0;
     // Get all unpaid orders for this table
     db.all(`
         SELECT * FROM orders WHERE paid = 0 AND table_number = ? ORDER BY order_id DESC
@@ -231,7 +241,7 @@ app.get('/payment', function (req, res) {
 });
 
 app.get('/api/payment-summary', (req, res) => {
-    const table_id = req.query.table_id;
+    const table_id = req.query.table_id || 0;
     db.all(`
         SELECT mi.item_name, oi.size, SUM(oi.quantity) AS quantity, mi.price
         FROM order_items oi
@@ -258,7 +268,7 @@ app.post('/api/payment/qr', (req, res) => {
             // Mark all unpaid orders for this table as paid
             db.run('UPDATE orders SET paid = 1 WHERE table_number = ? AND paid = 0', [table_id]);
             // After inserting a payment (QR or cashier)
-            io.emit('newPayment', { table_number, amount, method, paid_at, paid: 0 });
+            io.emit('newPayment', { table_id, amount, method:"QR", paid_at, paid: 0 });
             res.json({ success: true });
         }
     );
