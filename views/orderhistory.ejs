@@ -31,7 +31,7 @@
                     <div class="accordion-item mb-2">
                         <h2 class="accordion-header" id="heading<%= order.order_id %>">
                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= order.order_id %>" aria-expanded="false" aria-controls="collapse<%= order.order_id %>">
-                                ออเดอร์ #<%= order.order_id %> | โต๊ะ: <%= order.table_number || order.table_id %> | เวลา: <%= order.start_time || order.created_at %> | สถานะการชำระเงิน: <%= order.paid ? 'ชำระแล้ว' : 'ยังไม่ชำระ' %>
+                                ออเดอร์ #<%= order.order_id %> | โต๊ะ: <%= typeof order.table_number !== 'undefined' ? order.table_number : order.table_id %> | เวลา: <%= order.start_time || order.created_at %> | สถานะการชำระเงิน: <%= order.paid ? 'ชำระแล้ว' : 'ยังไม่ชำระ' %>
                             </button>
                         </h2>
                         <div id="collapse<%= order.order_id %>" class="accordion-collapse collapse" aria-labelledby="heading<%= order.order_id %>" data-bs-parent="#orderHistoryAccordion">
