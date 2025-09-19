@@ -19,16 +19,15 @@ A modern Node.js + Express demo for restaurant ordering, staff management, and r
 
 3. **Run the server**
    ```bash
-   node index.js
+   npm start
    ```
-   The app runs at [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## 👨‍🍳 Staff Panel
 
 - **Access:**  
-  Go to `/staff` or `/serve` for staff operations.
+  Go to `/staff`, `/serve`, `/cashier` for staff operations.
 - **Features:**  
   - View all orders in real time.
   - See what needs to be served.
