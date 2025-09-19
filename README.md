@@ -6,8 +6,8 @@
 
 1. **Clone the repo**
    ```bash
-   git clone https://github.com/yourusername/restaurant-demo.git
-   cd restaurant-demo/prototype
+   git clone https://github.com/maplecodingfrez/restaurant-demo.git
+   cd restaurant-demo
    ```
 
 2. **Install dependencies**
