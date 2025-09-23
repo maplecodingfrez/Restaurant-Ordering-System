@@ -6,6 +6,11 @@
     <title>ประวัติการสั่งอาหาร</title>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <script src="js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(to bottom right, #f0f0f0, #fbe9e7);
+        }
+    </style>
 </head>
 <body>
     <%- include('header.ejs') %>
@@ -31,7 +36,13 @@
                                     <% if (orders.length === 0) { %>
                                         <li class="list-group-item text-center text-muted">ไม่มีรายการ</li>
                                     <% } else { %>
-                                        <% items.forEach(function(item) { %>
+                                        <% items.forEach(function(item) { 
+                                            let basePrice = item.price || 0;
+                                            let displayPrice = basePrice;
+                                            if (item.size === 'L') displayPrice = basePrice * 1.2;
+                                            else if (item.size === 'S') displayPrice = basePrice * 0.8;
+                                            // Default (M or undefined) is basePrice
+                                        %>
                                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                                 <span>
                                                     <%= item.item_name %>
@@ -40,7 +51,7 @@
                                                 </span>
                                                 <span>
                                                     <span class="text-success me-2">
-                                                        <%= item.price ? Number(item.price).toLocaleString('en-US', {minimumFractionDigits: 2}) : '0.00' %> บาท
+                                                        <%= displayPrice ? Number(displayPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) : '0.00' %> บาท
                                                     </span>
                                                     <span>สถานะ: <%= item.status_name %></span>
                                                 </span>

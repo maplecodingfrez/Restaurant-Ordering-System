@@ -8,9 +8,27 @@
     </div>
     <div class="offcanvas-footer p-3">
         <div id="cartTotalPrice" class="fw-bold fs-5 text-end text-center mb-2"></div>
-        <button class="btn btn-success w-100" id="checkoutBtn">สั่งอาหาร</button>
+        <button class="btn btn-danger w-100" id="checkoutBtn">สั่งอาหาร</button>
     </div>
 </div>
+<!-- Modal แจ้งเตือนยังไม่ได้เพิ่มอาหารเข้าตะกร้า -->
+<div class="modal fade" id="cartEmptyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-header bg-danger">
+                <h5 class="modal-title fw-bold text-white">⚠️ แจ้งเตือน</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body fs-5">
+                ยังไม่ได้เพิ่มรายการอาหารลงตะกร้า
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="goMenuBtn">ไปที่หน้าเมนู</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // Cart logic
     function saveCart() {
@@ -37,7 +55,14 @@
         }
 
         cartItemsDiv.innerHTML = cart.map((item, idx) => {
-            const itemTotal = item.price * item.qty;
+            // Calculate price based on size
+            let basePrice = item.price || 0;
+            let displayPrice = basePrice;
+            if (item.size === 'L') displayPrice = basePrice * 1.2;
+            else if (item.size === 'S') displayPrice = basePrice * 0.8;
+            // Default (M or undefined) is basePrice
+
+            const itemTotal = displayPrice * item.qty;
             totalPrice += itemTotal;
             return `
             <div class="d-flex align-items-center mb-3">
@@ -50,7 +75,7 @@
                         <button class="btn btn-outline-secondary btn-sm" type="button" onclick="changeCartQty(${idx}, 1)">+</button>
                     </div>
                 </div>
-                <div class="fw-bold ms-2">${item.price ? itemTotal.toFixed(2) + ' บาท' : ''}</div>
+                <div class="fw-bold ms-2">${itemTotal.toFixed(2)} บาท</div>
                 <button class="btn btn-sm btn-danger ms-2" onclick="removeCartItem(${idx})">ลบ</button>
             </div>
             `;
@@ -74,13 +99,25 @@
     }
 
     document.querySelectorAll('[data-bs-target="#cartOffcanvas"]').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             updateCartWidget();
         });
     });
 
-    document.getElementById('checkoutBtn').addEventListener('click', function() {
-        if (cart.length === 0) return;
+    document.getElementById('checkoutBtn').addEventListener('click', function () {
+        if (cart.length === 0) {
+            // แสดง Modal
+            const modal = new bootstrap.Modal(document.getElementById('cartEmptyModal'));
+            modal.show();
+
+            // เมื่อกดปุ่ม "ไปที่หน้าเมนู"
+            document.getElementById('goMenuBtn').addEventListener('click', () => {
+                window.location.href = "/menu";
+            });
+
+            return;
+        }
+
         const table_id = localStorage.getItem('table_id');
 
         const overlay = document.createElement('div');
@@ -111,25 +148,25 @@
             },
             body: JSON.stringify({ cart, table_id })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                msgBox.innerHTML = `<div class="fw-bold fs-5 text-success">บันทึกออเดอร์เรียบร้อยแล้ว!</div>`;
-                cart = [];
-                saveCart();
-                updateCartWidget();
-                setTimeout(() => {
-                    bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('cartOffcanvas')).hide();
-                    overlay.remove();
-                }, 1200);
-            } else {
-                msgBox.innerHTML = `<div class="fw-bold fs-5 text-danger">เกิดข้อผิดพลาดในการบันทึกออเดอร์</div>`;
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    msgBox.innerHTML = `<div class="fw-bold fs-5 text-success">บันทึกออเดอร์เรียบร้อยแล้ว!</div>`;
+                    cart = [];
+                    saveCart();
+                    updateCartWidget();
+                    setTimeout(() => {
+                        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('cartOffcanvas')).hide();
+                        overlay.remove();
+                    }, 1200);
+                } else {
+                    msgBox.innerHTML = `<div class="fw-bold fs-5 text-danger">เกิดข้อผิดพลาดในการบันทึกออเดอร์</div>`;
+                    setTimeout(() => overlay.remove(), 1500);
+                }
+            })
+            .catch(() => {
+                msgBox.innerHTML = `<div class="fw-bold fs-5 text-danger">เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์</div>`;
                 setTimeout(() => overlay.remove(), 1500);
-            }
-        })
-        .catch(() => {
-            msgBox.innerHTML = `<div class="fw-bold fs-5 text-danger">เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์</div>`;
-            setTimeout(() => overlay.remove(), 1500);
-        });
+            });
     });
 </script>

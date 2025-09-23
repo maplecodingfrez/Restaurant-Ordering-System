@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Cinzel:wght@400..900&family=Epunda+Slab:ital,wght@0,300..900;1,300..900&family=Exo+2:ital,wght@0,100..900;1,100..900&family=Goldman:wght@400;700&family=IBM+Plex+Sans+Thai+Looped:wght@100;200;300;400;500;600;700&family=Itim&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Kodchasan:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Mali:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Pridi:wght@200;300;400;500;600;700&family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+        rel="stylesheet">
     <!-- Add your CSS and JS links here -->
     <style>
         /* Hide the default "Powered by" label and frame */
@@ -12,6 +18,7 @@
             padding: 0;
             margin: 0;
         }
+
         #google_translate_element .goog-te-gadget .goog-te-combo {
             font-size: 1rem;
             padding: 2px 8px;
@@ -19,15 +26,19 @@
             border: 1px solid #ccc;
             background: #f8f9fa;
         }
+
         #google_translate_element img {
             display: none !important;
         }
+
         body {
             top: 0 !important;
             position: static !important;
             margin-top: 0 !important;
             padding-top: 0 !important;
+            font-family: "Kodchasan", sans-serif;
         }
+
         html {
             margin-top: 0 !important;
             padding-top: 0 !important;
@@ -35,112 +46,131 @@
 
         body {
             top: 0px !important;
-            }
+        }
 
-            body > .skiptranslate > iframe.skiptranslate {
+        body>.skiptranslate>iframe.skiptranslate {
             display: none !important;
             visibility: hidden !important;
-            }
+        }
+
+        .bg-custom {
+            background-color: #b71c1c;
+        }
+
+        .navbar-nav.flex-row.ms-3, .nav-link {
+            font-weight: bold;
+            font-size: 17px;
+            color: white;
+        }
+
     </style>
 </head>
+
 <body>
-<nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light border p-3">
-    <div class="d-flex w-100 align-items-center">
-        <div class="d-flex ms-5">
-            <ul class="navbar-nav flex-row ms-3">
-                <li class="nav-item">
-                    <a class="nav-link" href="/<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">หน้าหลัก</a>
+    <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-custom p-3">
+        <div class="d-flex w-100 align-items-center">
+            <div class="d-flex ms-5">
+                <ul class="navbar-nav flex-row ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                            href="/<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">หน้าหลัก</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav flex-row ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link"
+                            href="/menu<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">เมนูทั้งหมด</a>
+                    </li>
+                </ul>
+            </div>
+            <ul class="navbar-nav flex-row ms-auto align-items-center mb-0">
+                <li class="nav-item me-2">
+                    <div id="google_translate_element"></div>
                 </li>
-            </ul>
-            <ul class="navbar-nav flex-row ms-3">
-                <li class="nav-item">
-                    <a class="nav-link" href="/menu<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">เมนูทั้งหมด</a>
+                <li class="nav-item me-2">
+                    <a class="nav-link" href="#" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
+                        <i class="bi bi-cart"></i> ตะกร้า
+                    </a>
+                </li>
+                <li class="nav-item me-2">
+                    <a class="nav-link"
+                        href="/history<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">
+                        <i class="bi bi-cart"></i> ประวัติการสั่งอาหาร
+                    </a>
+                </li>
+                <li class="nav-item me-5">
+                    <a class="nav-link"
+                        href="/payment<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">
+                        <i class="bi bi-cart"></i> ชำระเงิน
+                    </a>
+                </li>
+                <li class="nav-item d-lg-none">
+                    <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+                        aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
                 </li>
             </ul>
         </div>
-        <ul class="navbar-nav flex-row ms-auto align-items-center mb-0">
-            <li class="nav-item me-2">
-                <div id="google_translate_element"></div>
-            </li>
-            <li class="nav-item me-2">
-                <a class="nav-link" href="#" data-bs-toggle="offcanvas" data-bs-target="#cartOffcanvas">
-                    <i class="bi bi-cart"></i> ตะกร้า
-                </a>
-            </li>
-            <li class="nav-item me-2">
-                <a class="nav-link" href="/history<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">
-                    <i class="bi bi-cart"></i> ประวัติการสั่งอาหาร
-                </a>
-            </li>
-            <li class="nav-item me-5">
-                <a class="nav-link" href="/payment<%= typeof table_id !== 'undefined' && table_id ? '?table_id=' + table_id : '' %>">
-                    <i class="bi bi-cart"></i> ชำระเงิน
-                </a>
-            </li>
-            <li class="nav-item d-lg-none">
-                <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-            </li>
-        </ul>
-    </div>
-</nav>
+    </nav>
 
-<script>
-(function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    let urlTableId = urlParams.get('table_id');
-    let storedTableId = localStorage.getItem('table_id');
+    <script>
+        (function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            let urlTableId = urlParams.get('table_id');
+            let storedTableId = localStorage.getItem('table_id');
 
-    if (urlTableId) {
-        if (storedTableId && storedTableId !== urlTableId) {
-            // Change the URL to match localStorage
-            const newUrl = window.location.pathname + '?table_id=' + storedTableId;
-            window.location.replace(newUrl);
-            return;
-        }
-        // If no localStorage, set it to URL value
-        if (!storedTableId) {
-            localStorage.setItem('table_id', urlTableId);
-        }
-    } else {
-        // If no table_id in URL, use localStorage or default to 0
-        if (!storedTableId) {
-            storedTableId = '0';
-            localStorage.setItem('table_id', storedTableId);
-        }
-        // Redirect to URL with table_id from localStorage
-        const newUrl = window.location.pathname + '?table_id=' + storedTableId;
-        window.location.replace(newUrl);
-    }
-})();
-</script>
-<script>
-window.tableId = window.tableId || localStorage.getItem('table_id');
-document.querySelectorAll('a.nav-link').forEach(link => {
-    if (window.tableId && link.href && !link.href.includes('table_id=')) {
-        if (link.href.startsWith(window.location.origin)) {
-            const url = new URL(link.href);
-            url.searchParams.set('table_id', window.tableId);
-            link.href = url.toString();
-        }
-    }
-});
+            if (urlTableId) {
+                if (storedTableId && storedTableId !== urlTableId) {
+                    // Change the URL to match localStorage
+                    const newUrl = window.location.pathname + '?table_id=' + storedTableId;
+                    window.location.replace(newUrl);
+                    return;
+                }
+                // If no localStorage, set it to URL value
+                if (!storedTableId) {
+                    localStorage.setItem('table_id', urlTableId);
+                }
+            } else {
+                // If no table_id in URL, use localStorage or default to 0
+                if (!storedTableId) {
+                    storedTableId = '0';
+                    localStorage.setItem('table_id', storedTableId);
+                }
+                // Redirect to URL with table_id from localStorage
+                const newUrl = window.location.pathname + '?table_id=' + storedTableId;
+                window.location.replace(newUrl);
+            }
+        })();
+    </script>
+    <script>
+        window.tableId = window.tableId || localStorage.getItem('table_id');
+        document.querySelectorAll('a.nav-link').forEach(link => {
+            if (window.tableId && link.href && !link.href.includes('table_id=')) {
+                if (link.href.startsWith(window.location.origin)) {
+                    const url = new URL(link.href);
+                    url.searchParams.set('table_id', window.tableId);
+                    link.href = url.toString();
+                }
+            }
+        });
 
-// Google Translate widget always visible in navbar
-window.googleTranslateElementInit = function() {
-    new google.translate.TranslateElement({
-        pageLanguage: 'th',
-        includedLanguages: 'en,th,ja,zh-CN',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE
-    }, 'google_translate_element');
-};
-(function() {
-    var script = document.createElement('script');
-    script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    document.body.appendChild(script);
-})();
+        // Google Translate widget always visible in navbar
+        window.googleTranslateElementInit = function () {
+            new google.translate.TranslateElement({
+                pageLanguage: 'th',
+                includedLanguages: 'en,th,ja,zh-CN',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE
+            }, 'google_translate_element');
+        };
+        (function () {
+            var script = document.createElement('script');
+            script.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+            document.body.appendChild(script);
+        })();
 
-</script>
+    </script>
 </body>
+
 </html>

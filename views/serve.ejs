@@ -1,113 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Serves</title>
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <script src="js/bootstrap.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Anonymous+Pro:ital,wght@0,400;0,700;1,400;1,700&family=Chakra+Petch:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Cinzel:wght@400..900&family=Epunda+Slab:ital,wght@0,300..900;1,300..900&family=Exo+2:ital,wght@0,100..900;1,100..900&family=Goldman:wght@400;700&family=IBM+Plex+Sans+Thai+Looped:wght@100;200;300;400;500;600;700&family=Itim&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Kodchasan:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Mali:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;1,200;1,300;1,400;1,500;1,600;1,700&family=Pridi:wght@200;300;400;500;600;700&family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: "Kodchasan", sans-serif;
+            background: linear-gradient(to bottom right, #f0f0f0, #fbe9e7);
+        }
+    </style>
 </head>
+
 <body>
     <%- include('staffHeader.ejs') %>
 
-    <div class="container mt-4">
-        <h2>สิ่งที่ต้องเสิร์ฟ</h2>
-        <div class="accordion" id="serveAccordion">
-            <% 
-                let hasServe = false;
-                orders.forEach(function(order) { 
-                    const items = orderItems[order.order_id] || [];
-                    if (items.length === 0) return;
-                    hasServe = true;
-                });
-            %>
-            <% if (!hasServe) { %>
-                <div class="text-center text-muted py-5">ไม่มีรายการ</div>
-            <% } else { %>
-                <% orders.forEach(function(order, idx) { 
-                    const items = orderItems[order.order_id] || [];
-                    if (items.length === 0) return;
-                %>
-                    <div class="accordion-item mb-2">
-                        <h2 class="accordion-header" id="heading<%= order.order_id %>">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= order.order_id %>" aria-expanded="false" aria-controls="collapse<%= order.order_id %>">
-                                ออเดอร์ #<%= order.order_id %> | โต๊ะ: <%= typeof order.table_number !== 'undefined' ? order.table_number : order.table_id %> | เวลา: <%= order.start_time || order.created_at %>
-                            </button>
-                        </h2>
-                        <div id="collapse<%= order.order_id %>" class="accordion-collapse collapse" aria-labelledby="heading<%= order.order_id %>" data-bs-parent="#serveAccordion">
-                            <div class="accordion-body">
-                                <ul class="list-group mb-3">
-                                    <% items.forEach(function(item) { %>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center"
-                                            data-price="<%= item.price %>">
-                                            <span>
-                                                <%= item.item_name %>
-                                                <span class="badge bg-info ms-2"><%= item.size %></span>
-                                                <span class="badge bg-secondary ms-2">x<%= item.quantity %></span>
-                                            </span>
-                                        </li>
-                                    <% }); %>
-                                </ul>
-                                <button class="btn btn-success serve-done-btn" data-order-id="<%= order.order_id %>">เสิร์ฟเสร็จแล้ว</button>
-                                <button class="btn btn-outline-primary ms-2 print-receipt-btn"
-                                    data-table-number="<%= order.table_number || order.table_id %>"
-                                    data-order-id="<%= order.order_id %>"
-                                    data-order-time="<%= order.start_time || order.created_at %>">พิมพ์ใบเสร็จ</button>
-                            </div>
-                        </div>
-                    </div>
-                <% }); %>
-            <% } %>
+        <div class="container mt-4">
+            <h2>สิ่งที่ต้องเสิร์ฟ</h2>
+            <div class="accordion" id="serveAccordion">
+                <% let hasServe=false; orders.forEach(function(order) { const items=orderItems[order.order_id] || []; if
+                    (items.length===0) return; hasServe=true; }); %>
+                    <% if (!hasServe) { %>
+                        <div class="text-center text-muted py-5">ไม่มีรายการ</div>
+                        <% } else { %>
+                            <% orders.forEach(function(order, idx) { const items=orderItems[order.order_id] || []; if
+                                (items.length===0) return; %>
+                                <div class="accordion-item mb-2">
+                                    <h2 class="accordion-header" id="heading<%= order.order_id %>">
+                                        <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#collapse<%= order.order_id %>"
+                                            aria-expanded="false" aria-controls="collapse<%= order.order_id %>">
+                                            ออเดอร์ #<%= order.order_id %> | โต๊ะ: <%= typeof order.table_number
+                                                    !=='undefined' ? order.table_number : order.table_id %> | เวลา: <%=
+                                                        order.start_time || order.created_at %>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse<%= order.order_id %>" class="accordion-collapse collapse"
+                                        aria-labelledby="heading<%= order.order_id %>" data-bs-parent="#serveAccordion">
+                                        <div class="accordion-body">
+                                            <ul class="list-group mb-3">
+                                                <% items.forEach(function(item) { %>
+                                                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                                                        data-price="<%= item.price %>">
+                                                        <span>
+                                                            <%= item.item_name %>
+                                                                <span class="badge bg-info ms-2">
+                                                                    <%= item.size %>
+                                                                </span>
+                                                                <span class="badge bg-secondary ms-2">x<%= item.quantity
+                                                                        %></span>
+                                                        </span>
+                                                    </li>
+                                                    <% }); %>
+                                            </ul>
+                                            <button class="btn btn-success serve-done-btn"
+                                                data-order-id="<%= order.order_id %>">เสิร์ฟเสร็จแล้ว</button>
+                                            <button class="btn btn-outline-primary ms-2 print-receipt-btn"
+                                                data-table-number="<%= order.table_number || order.table_id %>"
+                                                data-order-id="<%= order.order_id %>"
+                                                data-order-time="<%= order.start_time || order.created_at %>">พิมพ์ใบเสร็จ</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }); %>
+                                    <% } %>
+            </div>
         </div>
-    </div>
 
-    <script>
-    document.querySelectorAll('.serve-done-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const orderId = this.dataset.orderId;
-            // Show a temporary message
-            const msg = document.createElement('div');
-            msg.className = "alert alert-success mt-2";
-            msg.textContent = "กำลังอัปเดตสถานะ...";
-            btn.parentNode.appendChild(msg);
+        <script>
+            document.querySelectorAll('.serve-done-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const orderId = this.dataset.orderId;
+                    // Show a temporary message
+                    const msg = document.createElement('div');
+                    msg.className = "alert alert-success mt-2";
+                    msg.textContent = "กำลังอัปเดตสถานะ...";
+                    btn.parentNode.appendChild(msg);
 
-            fetch('/serve-done/' + orderId, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) {
-                        msg.textContent = "อัปเดตสถานะเสร็จสิ้น กำลังรีเฟรช...";
-                        setTimeout(() => location.reload(), 1000);
-                    } else {
-                        msg.className = "alert alert-danger mt-2";
-                        msg.textContent = "อัปเดตสถานะไม่สำเร็จ";
-                        setTimeout(() => msg.remove(), 1500);
-                    }
+                    fetch('/serve-done/' + orderId, { method: 'POST' })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                msg.textContent = "อัปเดตสถานะเสร็จสิ้น กำลังรีเฟรช...";
+                                setTimeout(() => location.reload(), 1000);
+                            } else {
+                                msg.className = "alert alert-danger mt-2";
+                                msg.textContent = "อัปเดตสถานะไม่สำเร็จ";
+                                setTimeout(() => msg.remove(), 1500);
+                            }
+                        });
                 });
-        });
-    });
+            });
 
-    // Print receipt button
-    document.querySelectorAll('.print-receipt-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tableNumber = btn.dataset.tableNumber;
-            const orderId = btn.dataset.orderId;
-            const orderTime = btn.dataset.orderTime;
-            const orderBody = btn.closest('.accordion-body');
-            // Build receipt items: [quantity] menu_name [size] ... price
-            const itemsList = Array.from(orderBody.querySelectorAll('.list-group-item')).map(li => {
-                const qty = li.querySelector('.badge.bg-secondary')?.textContent.replace('x', '') || '';
-                const name = li.querySelector('span')?.childNodes[0]?.textContent.trim() || '';
-                const size = li.querySelector('.badge.bg-info')?.textContent || '';
-                const price = li.dataset.price ? Number(li.dataset.price).toLocaleString('en-US', {minimumFractionDigits: 2}) : '';
-                return `<div style="display:flex;justify-content:space-between;">
+            // Print receipt button
+            document.querySelectorAll('.print-receipt-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const tableNumber = btn.dataset.tableNumber;
+                    const orderId = btn.dataset.orderId;
+                    const orderTime = btn.dataset.orderTime;
+                    const orderBody = btn.closest('.accordion-body');
+                    // Build receipt items: [quantity] menu_name [size] ... price
+                    const itemsList = Array.from(orderBody.querySelectorAll('.list-group-item')).map(li => {
+                        const qty = li.querySelector('.badge.bg-secondary')?.textContent.replace('x', '') || '';
+                        const name = li.querySelector('span')?.childNodes[0]?.textContent.trim() || '';
+                        const size = li.querySelector('.badge.bg-info')?.textContent || '';
+                        const price = li.dataset.price ? Number(li.dataset.price).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '';
+                        return `<div style="display:flex;justify-content:space-between;">
                     <span>[${qty}] ${name} [${size}]</span>
                     <span>${price} บาท</span>
                 </div>`;
-            }).join('');
+                    }).join('');
 
-            // Create receipt content with small paper size
-            const receiptWindow = window.open('', '', 'width=350,height=600');
-            receiptWindow.document.write(`
+                    // Create receipt content with small paper size
+                    const receiptWindow = window.open('', '', 'width=350,height=600');
+                    receiptWindow.document.write(`
                 <html>
                 <head>
                     <title>ใบเสร็จ</title>
@@ -138,18 +152,19 @@
                 </body>
                 </html>
             `);
-            receiptWindow.document.close();
-        });
-    });
+                    receiptWindow.document.close();
+                });
+            });
 
-    </script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-    const socket = io();
-    socket.on('orderServed', function(data) {
-        // Reload serve page to show new served order
-        location.reload();
-    });
-    </script>
+        </script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io();
+            socket.on('orderServed', function (data) {
+                // Reload serve page to show new served order
+                location.reload();
+            });
+        </script>
 </body>
+
 </html>

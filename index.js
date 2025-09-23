@@ -1,8 +1,7 @@
 const express = require("express");
 const path = require("path");
-const port = 3000;
 const sqlite3 = require('sqlite3').verbose();
-const cookieParser = require('cookie-parser');
+const port = 3000;
 
 // Creating the Express server
 const app = express();
@@ -24,7 +23,6 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist/")));
-app.use(cookieParser());
 
 // routing path
 
@@ -36,11 +34,7 @@ app.get('/', function (req, res) {
 });
 
 app.get('/menu', function (req, res) {
-    let table_id = req.query.table_id || req.cookies?.table_id || 0;
-    if (req.query.table_id && req.query.table_id !== req.cookies?.table_id) {
-        res.cookie('table_id', req.query.table_id, { maxAge: 24 * 60 * 60 * 1000 }); // 1 day
-        table_id = req.query.table_id;
-    }
+    const table_id = req.query.table_id || 0;
     db.all('SELECT * FROM category', (err, rows) => {
         db.all('SELECT * FROM menu_items', (err2, menuItems) => {
             if (err) {
@@ -50,7 +44,7 @@ app.get('/menu', function (req, res) {
             res.render('menu', { data: rows || [], data2: menuItems || [], table_id });
         });
     });
-})
+});
 
 app.get('/orders', function (req, res) {
     db.all('SELECT * FROM orders ORDER BY start_time ASC', (err, orders) => {
@@ -305,9 +299,30 @@ app.post('/api/payment/complete', (req, res) => {
     });
 });
 
-io.on('connection', (socket) => {
-    console.log('A user connected:', socket.id);
+app.get('/payment/success', (req, res) => {
+    const table_id = req.query.table_id;
+    const amount = req.query.amount;
+    db.run(
+        'INSERT INTO payments (table_number, amount, method, paid_at, paid) VALUES (?, ?, ?, ?, ?)',
+        [table_id, amount, 'QR', new Date().toISOString(), 1],
+        function (err2) {
+            db.run('UPDATE orders SET paid = 1 WHERE table_number = ? AND paid = 0', [table_id]);
+            io.emit('paymentCompleted', { table_id, amount });
+            res.send(`
+                <html>
+                <body>
+                    <div>Payment complete</div>
+                    <script>
+                        setTimeout(function(){ window.close(); }, 2000);
+                    </script>
+                </body>
+                </html>
+            `);
+        }
+    );
+});
 
+io.on('connection', (socket) => {
     socket.on('paymentSkipped', (data) => {
         // Broadcast to all other clients except sender
         socket.broadcast.emit('paymentSkipped', data);
@@ -315,10 +330,6 @@ io.on('connection', (socket) => {
 
     socket.on('paymentCashier', (data) => {
         socket.broadcast.emit('paymentCashier', data);
-    });
-    
-    socket.on('disconnect', () => {
-        console.log('User disconnected:', socket.id);
     });
 });
 

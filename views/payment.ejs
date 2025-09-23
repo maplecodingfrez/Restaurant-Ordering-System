@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,197 +8,228 @@
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css" />
     <script src="js/bootstrap.bundle.min.js"></script>
     <style>
-      .modal-dialog {
-        display: flex;
-        align-items: center;
-        min-height: 100vh;
-        justify-content: center;
-      }
+        .modal-dialog {
+            display: flex;
+            align-items: center;
+            min-height: 100vh;
+            justify-content: center;
+        }
+
+        .modal-header {
+            background-color: #b71c1c;
+        }
+
     </style>
 </head>
+
 <body>
     <%- include('header.ejs') %>
-    <div class="container mt-4">
-        <h2 class="mb-4">ชำระเงิน</h2>
-        <form id="paymentForm">
-            <div class="mb-3">
-                <label for="table_id" class="form-label">โต๊ะ</label>
-                <input type="text" class="form-control" id="table_id" name="table_id" value="<%= table_id %>" readonly>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">เมนูที่สั่งทั้งหมดสำหรับโต๊ะนี้</label>
-                <ul class="list-group mb-3">
-                    <% let total = 0; %>
-                    <% if (allOrderedItems.length === 0) { %>
-                        <li class="list-group-item text-center text-muted">ไม่มีรายการ</li>
-                    <% } else { %>
-                        <% allOrderedItems.forEach(function(item) { 
-                            const itemTotal = item.price * item.total_qty;
-                            total += itemTotal;
-                        %>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>
-                                    <%= item.item_name %>
-                                    <span class="badge bg-info ms-2"><%= item.size %></span>
-                                    <span class="badge bg-secondary ms-2">x<%= item.total_qty %></span>
-                                </span>
-                                <span>
-                                    <%= Number(item.price).toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท
-                                    <span class="ms-2 text-muted">รวม: <%= itemTotal.toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท</span>
-                                </span>
-                            </li>
-                        <% }); %>
-                    <% } %>
-                </ul>
-            </div>
-            <div class="mb-3 text-end">
-                <span class="fw-bold fs-5">รวมทั้งหมด: <span id="totalPrice"><%= total.toLocaleString('en-US', {minimumFractionDigits: 2}) %></span> บาท</span>
-                <br>
-                <% 
-                    const vat = Math.round(total * 0.07 * 100) / 100;
-                    const finalPrice = total + vat;
-                %>
-                <span class="fw-bold">VAT 7%: <%= vat.toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท</span>
-                <br>
-                <span class="fw-bold fs-4 text-success">ยอดสุทธิ: <%= finalPrice.toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท</span>
-            </div>
-            <button type="submit" class="btn btn-success w-100">ยืนยันการชำระเงิน</button>
-        </form>
-        <div id="paymentMsg" class="mt-3"></div>
+        <div class="container mt-4">
+            <h2 class="mb-4">ชำระเงิน</h2>
+            <form id="paymentForm">
+                <div class="mb-3">
+                    <label for="table_id" class="form-label">โต๊ะ</label>
+                    <input type="text" class="form-control" id="table_id" name="table_id" value="<%= table_id %>"
+                        readonly>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">เมนูที่สั่งทั้งหมดสำหรับโต๊ะนี้</label>
+                    <ul class="list-group mb-3">
+                        <% let total=0; %>
+                        <% if (allOrderedItems.length===0) { %>
+                            <li class="list-group-item text-center text-muted">ไม่มีรายการ</li>
+                        <% } else { %>
+                            <% allOrderedItems.forEach(function(item) { 
+                                let basePrice = item.price || 0;
+                                let displayPrice = basePrice;
+                                if (item.size === 'L') displayPrice = basePrice * 1.2;
+                                else if (item.size === 'S') displayPrice = basePrice * 0.8;
+                                // Default (M or undefined) is basePrice
 
-        <hr class="my-4">
-    </div>
+                                const itemTotal = displayPrice * item.total_qty;
+                                total += itemTotal;
+                            %>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        <%= item.item_name %>
+                                        <span class="badge bg-info ms-2"><%= item.size %></span>
+                                        <span class="badge bg-secondary ms-2">x<%= item.total_qty %></span>
+                                    </span>
+                                    <span>
+                                        <%= Number(displayPrice).toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท
+                                        <span class="ms-2 text-muted">รวม: <%= itemTotal.toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท</span>
+                                    </span>
+                                </li>
+                            <% }); %>
+                        <% } %>
+                    </ul>
+                </div>
+                <div class="mb-3 text-end">
+                    <span class="fw-bold fs-5">รวมทั้งหมด: <span id="totalPrice">
+                            <%= total.toLocaleString('en-US', {minimumFractionDigits: 2}) %>
+                        </span> บาท</span>
+                    <br>
+                    <% const vat=Math.round(total * 0.07 * 100) / 100; const finalPrice=total + vat; %>
+                    <span class="fw-bold">VAT 7%: <%= vat.toLocaleString('en-US', {minimumFractionDigits: 2}) %>
+                                บาท</span>
+                    <br>
+                    <span class="fw-bold fs-4 text-success">ยอดสุทธิ: <%= finalPrice.toLocaleString('en-US',
+                                {minimumFractionDigits: 2}) %> บาท</span>
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold">ยืนยันการชำระเงิน</button>
+            </form>
+            <div id="paymentMsg" class="mt-3"></div>
 
-    <%- include('cart') %>
+            <hr class="my-4">
+        </div>
 
-    <%- include('footer') %>
+        <%- include('cart') %>
 
-    <!-- Add this modal before </body> -->
-<div class="modal fade" id="paymentMethodModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">เลือกวิธีชำระเงิน</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body text-center">
-        <button type="button" class="btn btn-primary w-100 mb-3" id="payWithQRBtn">QR Code PromptPay</button>
-        <button type="button" class="btn btn-secondary w-100" id="payAtCashierBtn">ชำระที่แคชเชียร์</button>
-        <div id="qrArea" class="mt-4"></div>
-      </div>
-    </div>
-  </div>
-</div>
+            <%- include('footer') %>
 
-<div class="modal fade" id="qrPaymentModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">ชำระเงินด้วย QR Code</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body text-center">
-        <div id="qrArea2" class="mb-3"></div>
-        <div class="mt-2" style="font-size:0.9em; color:#888; opacity:0.7; cursor:pointer;" id="skipQRBtn">กดเพื่อข้าม</div>
-      </div>
-    </div>
-  </div>
-</div>
+                <!-- Add this modal before </body> -->
+                <div class="modal fade" id="paymentMethodModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-white">เลือกวิธีชำระเงิน</h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <button type="button" class="btn btn-success w-100 mb-3 fw-bold" id="payWithQRBtn">QR Code
+                                    PromptPay</button>
+                                <button type="button" class="btn btn-secondary w-100 fw-bold"
+                                    id="payAtCashierBtn">ชำระที่แคชเชียร์</button>
+                                <div id="qrArea" class="mt-4"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-window.socket = io();
+                <div class="modal fade" id="qrPaymentModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title text-white">ชำระเงินด้วย QR Code</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <div id="qrArea2" class="mb-3"></div>
+                                <div class="mt-2" style="font-size:0.9em; color:#888; opacity:0.7; cursor:pointer;"
+                                    id="skipQRBtn">กดเพื่อข้าม</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-const payBtn = document.querySelector('#paymentForm button[type="submit"]');
-const noItems = <%= allOrderedItems.length === 0 ? 'true' : 'false' %>;
+                <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+                <script src="/socket.io/socket.io.js"></script>
+                <script>
+                    window.socket = io();
 
-if (noItems) {
-    payBtn.disabled = true;
-    payBtn.classList.add('btn-secondary');
-    payBtn.classList.remove('btn-success');
-    payBtn.textContent = 'ไม่สามารถชำระเงินได้ (ไม่มีรายการอาหาร)';
-}
+                    const payBtn = document.querySelector('#paymentForm button[type="submit"]');
+                    const noItems = <%= allOrderedItems.length === 0 ? 'true' : 'false' %>;
 
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    if (noItems) {
-        e.preventDefault();
-        const msg = document.getElementById('paymentMsg');
-        msg.innerHTML = '<div class="alert alert-warning">ไม่สามารถชำระเงินได้ เนื่องจากไม่มีรายการอาหาร</div>';
-        return;
-    }
-    e.preventDefault();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('paymentMethodModal')).show();
-});
+                    if (noItems) {
+                        payBtn.disabled = true;
+                        payBtn.classList.add('btn-secondary');
+                        payBtn.classList.remove('btn-success');
+                        payBtn.textContent = 'ไม่สามารถชำระเงินได้ (ไม่มีรายการอาหาร)';
+                    }
 
-document.getElementById('payWithQRBtn').addEventListener('click', function() {
-    const table_id = document.getElementById('table_id').value;
-    const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
-    const qrString = `${window.location.origin}/payment/success?table_id=${table_id}&amount=${amount}`;
-    const qrArea2 = document.getElementById('qrArea2');
-    qrArea2.innerHTML = ''; // Clear previous QR
+                    document.getElementById('paymentForm').addEventListener('submit', function (e) {
+                        if (noItems) {
+                            e.preventDefault();
+                            const msg = document.getElementById('paymentMsg');
+                            msg.innerHTML = '<div class="alert alert-warning">ไม่สามารถชำระเงินได้ เนื่องจากไม่มีรายการอาหาร</div>';
+                            return;
+                        }
+                        e.preventDefault();
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('paymentMethodModal')).show();
+                    });
 
-    // Create a canvas element for QRCode.js
-    const canvas = document.createElement('canvas');
-    qrArea2.appendChild(canvas);
+                    document.getElementById('payWithQRBtn').addEventListener('click', function () {
+                        const table_id = document.getElementById('table_id').value;
+                        const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
+                        const qrString = `${window.location.origin}/payment/success?table_id=${table_id}&amount=${amount}`;
+                        const qrArea2 = document.getElementById('qrArea2');
+                        qrArea2.innerHTML = ''; // Clear previous QR
 
-    QRCode.toCanvas(canvas, qrString, function (error) {
-        if (error) qrArea2.textContent = 'เกิดข้อผิดพลาดในการสร้าง QR';
-    });
+                        // Create a canvas element for QRCode.js
+                        const canvas = document.createElement('canvas');
+                        qrArea2.appendChild(canvas);
 
-    // Hide payment method modal and show QR modal
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('paymentMethodModal')).hide();
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('qrPaymentModal')).show();
-});
-document.getElementById('payAtCashierBtn').addEventListener('click', function() {
-    const table_id = document.getElementById('table_id').value;
-    const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
-    fetch('/api/payment/cashier', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ table_id, amount })
-    })
-    .then(res => res.json())
-    .then(data => {
-        // Emit real-time event to cashier
-        if (window.socket) {
-            window.socket.emit('paymentCashier', { table_id, amount });
-        }
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('paymentMethodModal')).hide();
-        const msg = document.getElementById('paymentMsg');
-        if (data.success) {
-            msg.innerHTML = '<div class="alert alert-info">กรุณาไปที่แคชเชียร์เพื่อชำระเงินและเสร็จสิ้นรายการ</div>';
-            setTimeout(() => {
-                window.location.href = '/?table_id=' + table_id;
-            }, 2200);
-        } else {
-            msg.innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการบันทึก</div>';
-        }
-    });
-});
-document.getElementById('skipQRBtn').addEventListener('click', function() {
-    const table_id = document.getElementById('table_id').value;
-    const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
-    // Send a socket event to cashier page
-    if (window.socket) {
-        window.socket.emit('paymentSkipped', { table_id, amount });
-    }
-    // Add payment row via API
-    fetch('/api/payment/qr', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ table_id, amount })
-    }).then(res => res.json())
-      .then(data => {
-        // Show transaction complete popup
-        const msg = document.getElementById('paymentMsg');
-        msg.innerHTML = '<div class="alert alert-success">รายการชำระเงินเสร็จสมบูรณ์</div>';
-        setTimeout(() => {
-            window.location.href = '/?table_id=' + table_id;
-        }, 1800);
-      });
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('qrPaymentModal')).hide();
-});
-</script>
+                        QRCode.toCanvas(canvas, qrString, function (error) {
+                            if (error) qrArea2.textContent = 'เกิดข้อผิดพลาดในการสร้าง QR';
+                        });
+
+                        // Hide payment method modal and show QR modal
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('paymentMethodModal')).hide();
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('qrPaymentModal')).show();
+                    });
+                    document.getElementById('payAtCashierBtn').addEventListener('click', function () {
+                        const table_id = document.getElementById('table_id').value;
+                        const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
+                        fetch('/api/payment/cashier', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ table_id, amount })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                // Emit real-time event to cashier
+                                if (window.socket) {
+                                    window.socket.emit('paymentCashier', { table_id, amount });
+                                }
+                                bootstrap.Modal.getOrCreateInstance(document.getElementById('paymentMethodModal')).hide();
+                                const msg = document.getElementById('paymentMsg');
+                                if (data.success) {
+                                    msg.innerHTML = '<div class="alert alert-info">กรุณาไปที่แคชเชียร์เพื่อชำระเงินและเสร็จสิ้นรายการ</div>';
+                                    setTimeout(() => {
+                                        window.location.href = '/?table_id=' + table_id;
+                                    }, 2200);
+                                } else {
+                                    msg.innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการบันทึก</div>';
+                                }
+                            });
+                    });
+                    document.getElementById('skipQRBtn').addEventListener('click', function () {
+                        const table_id = document.getElementById('table_id').value;
+                        const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
+                        // Send a socket event to cashier page
+                        if (window.socket) {
+                            window.socket.emit('paymentSkipped', { table_id, amount });
+                        }
+                        // Add payment row via API
+                        fetch('/api/payment/qr', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ table_id, amount })
+                        }).then(res => res.json())
+                            .then(data => {
+                                // Show transaction complete popup
+                                const msg = document.getElementById('paymentMsg');
+                                msg.innerHTML = '<div class="alert alert-success">รายการชำระเงินเสร็จสมบูรณ์</div>';
+                                setTimeout(() => {
+                                    window.location.href = '/?table_id=' + table_id;
+                                }, 1800);
+                            });
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('qrPaymentModal')).hide();
+                    });
+
+                    window.socket.on('paymentCompleted', function(data) {
+                        const table_id = document.getElementById('table_id').value;
+                        if (String(data.table_id) === String(table_id)) {
+                            const msg = document.getElementById('paymentMsg');
+                            msg.innerHTML = '<div class="alert alert-success">รายการชำระเงินเสร็จสมบูรณ์</div>';
+                            bootstrap.Modal.getOrCreateInstance(document.getElementById('qrPaymentModal')).hide();
+                            setTimeout(() => {
+                                window.location.href = '/?table_id=' + table_id;
+                            }, 1800);
+                        }
+                    });
+                </script>
 </body>
+
 </html>
