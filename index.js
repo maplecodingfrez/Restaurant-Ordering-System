@@ -290,15 +290,6 @@ app.post('/api/payment/cashier', (req, res) => {
     );
 });
 
-app.post('/api/payment/complete', (req, res) => {
-    const { table_id } = req.body;
-    db.run('UPDATE payments SET paid = 1 WHERE table_number = ? AND method = "cashier" AND paid = 0', [table_id], function(err) {
-        if (err) return res.json({ success: false });
-        db.run('UPDATE orders SET paid = 1 WHERE table_number = ?', [table_id]);
-        res.json({ success: true });
-    });
-});
-
 app.get('/payment/success', (req, res) => {
     const table_id = req.query.table_id;
     const amount = req.query.amount;
@@ -323,11 +314,6 @@ app.get('/payment/success', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    socket.on('paymentSkipped', (data) => {
-        // Broadcast to all other clients except sender
-        socket.broadcast.emit('paymentSkipped', data);
-    });
-
     socket.on('paymentCashier', (data) => {
         socket.broadcast.emit('paymentCashier', data);
     });
