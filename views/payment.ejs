@@ -116,8 +116,6 @@
                             </div>
                             <div class="modal-body text-center">
                                 <div id="qrArea2" class="mb-3"></div>
-                                <div class="mt-2" style="font-size:0.9em; color:#888; opacity:0.7; cursor:pointer;"
-                                    id="skipQRBtn">กดเพื่อข้าม</div>
                             </div>
                         </div>
                     </div>
@@ -193,29 +191,6 @@
                                     msg.innerHTML = '<div class="alert alert-danger">เกิดข้อผิดพลาดในการบันทึก</div>';
                                 }
                             });
-                    });
-                    document.getElementById('skipQRBtn').addEventListener('click', function () {
-                        const table_id = document.getElementById('table_id').value;
-                        const amount = document.querySelector('.fw-bold.fs-4.text-success').textContent.replace(/[^0-9.]/g, '');
-                        // Send a socket event to cashier page
-                        if (window.socket) {
-                            window.socket.emit('paymentSkipped', { table_id, amount });
-                        }
-                        // Add payment row via API
-                        fetch('/api/payment/qr', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ table_id, amount })
-                        }).then(res => res.json())
-                            .then(data => {
-                                // Show transaction complete popup
-                                const msg = document.getElementById('paymentMsg');
-                                msg.innerHTML = '<div class="alert alert-success">รายการชำระเงินเสร็จสมบูรณ์</div>';
-                                setTimeout(() => {
-                                    window.location.href = '/?table_id=' + table_id;
-                                }, 1800);
-                            });
-                        bootstrap.Modal.getOrCreateInstance(document.getElementById('qrPaymentModal')).hide();
                     });
 
                     window.socket.on('paymentCompleted', function(data) {
