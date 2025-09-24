@@ -3,12 +3,10 @@ const path = require("path");
 const sqlite3 = require('sqlite3').verbose();
 const port = 3000;
 
-// Creating the Express server
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-// Connect to SQLite database
 let db = new sqlite3.Database(path.join(__dirname, 'restaurant.db'), (err) => {
   if (err) {
       return console.error(err.message);
@@ -16,15 +14,11 @@ let db = new sqlite3.Database(path.join(__dirname, 'restaurant.db'), (err) => {
   console.log('Connected to the SQlite database.');
 });
 
-// static resourse & templating engine
 app.use(express.static('public'));
-// Set EJS as templating engine
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist/")));
-
-// routing path
 
 app.get('/', function (req, res) {
     const table_id = req.query.table_id || 0;
@@ -98,13 +92,10 @@ app.get('/serve', function (req, res) {
     });
 });
 
-// Change status endpoint
 app.post('/order-status/:orderId', (req, res) => {
     const orderId = req.params.orderId;
-    // Example: set all items in this order to status_code = 2 (served)
     db.run('UPDATE order_items SET status_code = 2 WHERE order_id = ?', [orderId], function(err) {
         if (err) return res.json({ success: false });
-        // Emit event for serve page
         io.emit('orderServed', { orderId });
         res.json({ success: true });
     });
@@ -112,7 +103,6 @@ app.post('/order-status/:orderId', (req, res) => {
 
 app.post('/serve-done/:order_id', (req, res) => {
     const order_id = req.params.order_id;
-    // Set all items in this order with status_code 2 to status_code 3
     db.run('UPDATE order_items SET status_code = 3 WHERE order_id = ? AND status_code = 2', [order_id], function(err) {
         if (err) return res.json({ success: false });
         res.json({ success: true });
@@ -127,7 +117,6 @@ app.post('/order', (req, res) => {
         return res.json({ success: false });
     }
 
-    // 1. Insert into orders table to get new order_id
     db.run(
         'INSERT INTO orders (table_number, start_time, end_time) VALUES (?, datetime("now"), datetime("now", "+5 minutes"))',
         [table_id],
@@ -135,14 +124,12 @@ app.post('/order', (req, res) => {
             if (err) return res.json({ success: false });
             const order_id = this.lastID;
 
-            // 2. Insert each item into order_items with the new order_id
             const stmt = db.prepare('INSERT INTO order_items (order_id, menu_item_id, status_code, quantity, size) VALUES (?, ?, ?, ?, ?)');
             try {
                 cart.forEach(item => {
-                    stmt.run(order_id, item.menu_item_id, 1, item.qty, item.size); // status_code=1 (pending)
+                    stmt.run(order_id, item.menu_item_id, 1, item.qty, item.size);
                 });
                 stmt.finalize();
-                // Notify all connected clients about the new order
                 io.emit('newOrder', { order_id, table_id, cart });
                 res.json({ success: true, order_id });
             } catch (e) {
@@ -152,7 +139,6 @@ app.post('/order', (req, res) => {
     );
 });
 
-// HISTORY: Only show unpaid orders
 app.get('/history', (req, res) => {
     const table_id = req.query.table_id || 0;
     db.all('SELECT * FROM orders WHERE table_number = ? AND paid = 0 ORDER BY start_time DESC', [table_id], (err, orders) => {
@@ -193,10 +179,8 @@ app.get('/order-history', function (req, res) {
     });
 });
 
-// PAYMENT: Only show unpaid orders and items
 app.get('/payment', function (req, res) {
     const table_id = req.query.table_id || 0;
-    // Get all unpaid orders for this table
     db.all(`
         SELECT * FROM orders WHERE paid = 0 AND table_number = ? ORDER BY order_id DESC
     `, [table_id], (err, orders) => {
@@ -215,7 +199,6 @@ app.get('/payment', function (req, res) {
             GROUP BY mi.item_name, oi.size, mi.price, oi.order_id
             ORDER BY mi.item_name, oi.size
         `, orderIds, (err2, allOrderedItems) => {
-            // For order accordion
             db.all(`
                 SELECT oi.*, mi.item_name, mi.price, s.description AS status_name
                 FROM order_items oi
@@ -250,25 +233,6 @@ app.get('/api/payment-summary', (req, res) => {
     });
 });
 
-// Add this endpoint for skip QR payment
-app.post('/api/payment/qr', (req, res) => {
-    const { table_id, amount } = req.body;
-    const paid_at = new Date().toISOString();
-    db.run(
-        'INSERT INTO payments (table_number, amount, method, paid_at, paid) VALUES (?, ?, ?, ?, ?)',
-        [table_id, amount, 'QR', paid_at, 1],
-        function (err2) {
-            if (err2) return res.json({ success: false, message: 'Insert failed' });
-            // Mark all unpaid orders for this table as paid
-            db.run('UPDATE orders SET paid = 1 WHERE table_number = ? AND paid = 0', [table_id]);
-            // After inserting a payment (QR or cashier)
-            io.emit('newPayment', { table_id, amount, method:"QR", paid_at, paid: 0 });
-            res.json({ success: true });
-        }
-    );
-});
-
-// Add this endpoint for pay at cashier
 app.post('/api/payment/cashier', (req, res) => {
     const { table_id, amount } = req.body;
     const paid_at = new Date().toISOString();
@@ -277,7 +241,6 @@ app.post('/api/payment/cashier', (req, res) => {
         [table_id, amount, 'cashier', paid_at, 0],
         function (err2) {
             if (err2) return res.json({ success: false, message: 'Insert failed' });
-            // Emit real-time event
             io.emit('newPayment', {
                 table_number: table_id,
                 amount,
@@ -319,7 +282,6 @@ io.on('connection', (socket) => {
     });
 });
 
-// Starting the server
 http.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
