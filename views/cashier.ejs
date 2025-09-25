@@ -413,6 +413,28 @@
         setTimeout(() => notif.remove(), 4200);
     });
 
+    window.socket.on('paymentCompleted', function(data) {
+        const notif = document.createElement('div');
+        notif.style.position = 'fixed';
+        notif.style.bottom = '32px';
+        notif.style.right = '-400px';
+        notif.style.background = 'rgba(40,167,69,0.95)';
+        notif.style.color = '#fff';
+        notif.style.padding = '18px 32px';
+        notif.style.borderRadius = '12px';
+        notif.style.boxShadow = '0 2px 12px #0002';
+        notif.style.fontSize = '1.2em';
+        notif.style.zIndex = '9999';
+        notif.style.transition = 'right 0.8s cubic-bezier(.25,.8,.25,1), opacity 0.6s';
+        notif.style.opacity = '1';
+        notif.innerHTML = `โต๊ะ ${data.table_id} ชำระเงินผ่าน QR แล้ว<br>ยอดสุทธิ ${Number(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2})} บาท`;
+        document.body.appendChild(notif);
+
+        setTimeout(() => { notif.style.right = '32px'; }, 20);
+        setTimeout(() => { notif.style.right = '-400px'; notif.style.opacity = '0'; }, 3500);
+        setTimeout(() => notif.remove(), 4200);
+    });
+
     window.socket.on('newPayment', function(payment) {
         // Only add if it's a cashier payment and unpaid
         if (payment.method === 'cashier' && payment.paid === 0) {
@@ -534,6 +556,28 @@
         notif.style.transition = 'right 0.8s cubic-bezier(.25,.8,.25,1), opacity 0.6s';
         notif.style.opacity = '1';
         notif.innerHTML = `โต๊ะ ${data.table_id} ขอชำระเงินที่แคชเชียร์<br>ยอดสุทธิ ${Number(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2})} บาท`;
+        document.body.appendChild(notif);
+
+        setTimeout(() => { notif.style.right = '32px'; }, 20);
+        setTimeout(() => { notif.style.right = '-400px'; notif.style.opacity = '0'; }, 3500);
+        setTimeout(() => notif.remove(), 4200);
+    });
+
+    window.socket.on('paymentCompleted', function(data) {
+        const notif = document.createElement('div');
+        notif.style.position = 'fixed';
+        notif.style.bottom = '32px';
+        notif.style.right = '-400px';
+        notif.style.background = 'rgba(40,167,69,0.95)';
+        notif.style.color = '#fff';
+        notif.style.padding = '18px 32px';
+        notif.style.borderRadius = '12px';
+        notif.style.boxShadow = '0 2px 12px #0002';
+        notif.style.fontSize = '1.2em';
+        notif.style.zIndex = '9999';
+        notif.style.transition = 'right 0.8s cubic-bezier(.25,.8,.25,1), opacity 0.6s';
+        notif.style.opacity = '1';
+        notif.innerHTML = `โต๊ะ ${data.table_id} ชำระเงินผ่าน QR แล้ว<br>ยอดสุทธิ ${Number(data.amount).toLocaleString('en-US', {minimumFractionDigits: 2})} บาท`;
         document.body.appendChild(notif);
 
         setTimeout(() => { notif.style.right = '32px'; }, 20);
