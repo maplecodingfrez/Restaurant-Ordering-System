@@ -258,14 +258,13 @@ app.get('/payment/success', (req, res) => {
     const amount = req.query.amount;
     db.run(
         'INSERT INTO payments (table_number, amount, method, paid_at, paid) VALUES (?, ?, ?, ?, ?)',
-        [table_id, amount, 'QR', new Date().toISOString(), 1],
+        [table_id, amount, 'QR', new Date().toISOString(), 0],
         function (err2) {
-            db.run('UPDATE orders SET paid = 1 WHERE table_number = ? AND paid = 0', [table_id]);
             io.emit('paymentCompleted', { table_id, amount });
             res.send(`
                 <html>
                 <body>
-                    <div>Payment complete</div>
+                    <div>QR Payment recorded, please complete at cashier.</div>
                     <script>
                         setTimeout(function(){ window.close(); }, 2000);
                     </script>
@@ -278,7 +277,7 @@ app.get('/payment/success', (req, res) => {
 
 app.post('/api/payment/complete', (req, res) => {
     const { table_id } = req.body;
-    db.run('UPDATE payments SET paid = 1 WHERE table_number = ? AND method = "cashier" AND paid = 0', [table_id], function(err) {
+    db.run('UPDATE payments SET paid = 1 WHERE table_number = ? AND paid = 0', [table_id], function(err) {
         if (err) return res.json({ success: false });
         db.run('UPDATE orders SET paid = 1 WHERE table_number = ?', [table_id]);
         res.json({ success: true });

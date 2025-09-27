@@ -44,23 +44,44 @@
 <body>
     <%- include('staffHeader.ejs') %>
     <div class="container mt-4">
-        <!-- Show pending cashier payments -->
-        <h4 class="mt-5 mb-3">รายการรอชำระที่แคชเชียร์</h4>
-        <ul class="list-group">
+      <div class="row">
+        <div class="col-md-6">
+          <h4 class="mt-5 mb-3">รายการรอชำระที่แคชเชียร์</h4>
+          <ul class="list-group">
             <% payments.filter(p => p.method === 'cashier' && p.paid === 0).forEach(function(payment) { %>
-                <li class="list-group-item d-flex justify-content-between align-items-center payment-row"
-                    data-table="<%= payment.table_number %>"
-                    data-amount="<%= payment.amount %>"
-                    data-paidat="<%= payment.paid_at %>">
-                    <span>โต๊ะ <strong><%= payment.table_number %></strong></span>
-                    <span>ยอดสุทธิ <strong><%= Number(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) %></strong> บาท</span>
-                    <span class="text-muted small">เวลา: <%= payment.paid_at %></span>
-                </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center payment-row"
+                  data-table="<%= payment.table_number %>"
+                  data-amount="<%= payment.amount %>"
+                  data-paidat="<%= payment.paid_at %>">
+                <span>โต๊ะ <strong><%= payment.table_number %></strong></span>
+                <span>ยอดสุทธิ <strong><%= Number(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) %></strong> บาท</span>
+                <span class="text-muted small">เวลา: <%= payment.paid_at %></span>
+              </li>
             <% }); %>
             <% if (!payments.some(p => p.method === 'cashier' && p.paid === 0)) { %>
-                <li class="list-group-item text-center text-muted">ไม่มีรายการรอชำระที่แคชเชียร์</li>
+              <li class="list-group-item text-center text-muted">ไม่มีรายการรอชำระที่แคชเชียร์</li>
             <% } %>
-        </ul>
+          </ul>
+        </div>
+        <div class="col-md-6">
+          <h4 class="mt-5 mb-3">รายการชำระผ่าน QR Code</h4>
+          <ul class="list-group">
+            <% payments.filter(p => p.method === 'QR' && p.paid === 0).forEach(function(payment) { %>
+              <li class="list-group-item d-flex justify-content-between align-items-center payment-row"
+                  data-table="<%= payment.table_number %>"
+                  data-amount="<%= payment.amount %>"
+                  data-paidat="<%= payment.paid_at %>">
+                <span>โต๊ะ <strong><%= payment.table_number %></strong></span>
+                <span>ยอดสุทธิ <strong><%= Number(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2}) %></strong> บาท</span>
+                <span class="text-muted small">เวลา: <%= payment.paid_at %></span>
+              </li>
+            <% }); %>
+            <% if (!payments.some(p => p.method === 'QR' && p.paid === 0)) { %>
+              <li class="list-group-item text-center text-muted">ไม่มีรายการรอชำระผ่าน QR Code</li>
+            <% } %>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="modal fade" id="paymentSummaryModal" tabindex="-1">
