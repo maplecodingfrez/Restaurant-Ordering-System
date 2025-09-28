@@ -184,11 +184,11 @@ app.get('/payment', function (req, res) {
     db.all(`
         SELECT * FROM orders WHERE paid = 0 AND table_number = ? ORDER BY order_id DESC
     `, [table_id], (err, orders) => {
-        if (err) return res.render('payment', { table_id, allOrderedItems: [], orders: [], orderItems: {} });
+        if (err) return res.render('payment', { table_id, allOrderedItems: [], orders: [], orderItems: {}, noItems: true });
 
         const orderIds = orders.map(o => o.order_id);
         if (orderIds.length === 0) {
-            return res.render('payment', { table_id, allOrderedItems: [], orders: [], orderItems: {} });
+            return res.render('payment', { table_id, allOrderedItems: [], orders: [], orderItems: {}, noItems: true });
         }
 
         db.all(`
@@ -211,7 +211,7 @@ app.get('/payment', function (req, res) {
                     if (!orderItems[item.order_id]) orderItems[item.order_id] = [];
                     orderItems[item.order_id].push(item);
                 });
-                res.render('payment', { table_id, allOrderedItems, orders, orderItems });
+                res.render('payment', { table_id, allOrderedItems, orders, orderItems, noItems: false });
             });
         });
     });

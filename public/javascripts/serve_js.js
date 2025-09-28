@@ -57,7 +57,7 @@ document.querySelectorAll('.print-receipt-btn').forEach(btn => {
     </head>
     <body>
         <h2 class="text-center">ใบเสร็จ</h2>
-        <div><strong>โต๊ะ:</strong> ${tableNumber}</div>
+        <div><strong>โต๊ะ:</strong> ${(tableNumber !== undefined && tableNumber !== null && tableNumber !== '') ? tableNumber : '0'}</div>
         <div><strong>หมายเลขออเดอร์:</strong> ${orderId}</div>
         <div><strong>เวลา:</strong> ${orderTime}</div>
         <hr>

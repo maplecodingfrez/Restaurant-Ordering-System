@@ -37,7 +37,6 @@ document.querySelectorAll('a.nav-link').forEach(link => {
     }
 });
 
-// Google Translate widget always visible in navbar
 window.googleTranslateElementInit = function () {
     new google.translate.TranslateElement({
         pageLanguage: 'th',

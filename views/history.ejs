@@ -38,7 +38,7 @@
                                     <% } else { %>
                                         <% items.forEach(function(item) { 
                                             let basePrice = item.price || 0;
-                                            let displayPrice = basePrice;
+                                            let displayPrice = basePrice * item.quantity;
                                             if (item.size === 'L') displayPrice = basePrice * 1.2;
                                             else if (item.size === 'S') displayPrice = basePrice * 0.8;
                                             // Default (M or undefined) is basePrice

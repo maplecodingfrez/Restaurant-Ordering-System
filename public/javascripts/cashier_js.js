@@ -399,4 +399,76 @@ window.socket.on('newPayment', function(payment) {
                 });
         });
     }
+
+    // Add this after the cashier payment block
+    if (payment.method === 'QR' && payment.paid === 0) {
+        // Find the QR list group (right column)
+        const qrCol = document.querySelector('.col-md-6:nth-child(2)');
+        if (qrCol) {
+            const ul = qrCol.querySelector('.list-group');
+            // Remove "ไม่มีรายการ..." if present
+            const emptyRow = ul.querySelector('.text-center.text-muted');
+            if (emptyRow) emptyRow.remove();
+
+            // Add new payment row
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center payment-row';
+            li.setAttribute('data-table', payment.table_number);
+            li.setAttribute('data-amount', payment.amount);
+            li.setAttribute('data-paidat', payment.paid_at);
+            li.innerHTML = `
+                <span>โต๊ะ <strong>${payment.table_number}</strong></span>
+                <span>ยอดสุทธิ <strong>${Number(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</strong> บาท</span>
+                <span class="text-muted small">เวลา: ${payment.paid_at}</span>
+            `;
+            ul.appendChild(li);
+
+            // Re-attach click handler for the new row
+            li.addEventListener('click', function() {
+                const tableNum = this.dataset.table;
+                const paidAt = this.dataset.paidat;
+                fetch(`/api/payment-summary?table_id=${tableNum}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        let itemsHtml = '<ul class="list-group mb-3">';
+                        let total = 0;
+                        data.items.forEach(item => {
+                            let basePrice = item.price || 0;
+                            let displayPrice = basePrice;
+                            if (item.size === 'L') displayPrice = basePrice * 1.2;
+                            else if (item.size === 'S') displayPrice = basePrice * 0.8;
+                            // Default (M or undefined) is basePrice
+
+                            const itemTotal = displayPrice * item.quantity;
+                            total += itemTotal;
+                            itemsHtml += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>[${item.quantity}] ${item.item_name} [${item.size}]</span>
+                                <span>${itemTotal.toLocaleString('en-US', {minimumFractionDigits: 2})} บาท</span>
+                            </li>`;
+                        });
+                        itemsHtml += '</ul>';
+                        const vat = Math.round(total * 0.07 * 100) / 100;
+                        const final = total + vat;
+
+                        let html = `
+                            <div>โต๊ะ: <strong>${tableNum}</strong></div>
+                            <div>เวลา: <span class="text-muted">${paidAt}</span></div>
+                            <hr>
+                            <div><strong>รายการอาหาร:</strong></div>
+                            ${itemsHtml}
+                            <div class="mb-2 text-end">รวมทั้งหมด: <strong>${total.toLocaleString('en-US', {minimumFractionDigits: 2})} บาท</strong></div>
+                            <div class="mb-2 text-end">VAT 7%: <strong>${vat.toLocaleString('en-US', {minimumFractionDigits: 2})} บาท</strong></div>
+                            <div class="mb-2 text-end fs-5">ยอดสุทธิ: <strong>${final.toLocaleString('en-US', {minimumFractionDigits: 2})} บาท</strong></div>
+                        `;
+                        document.getElementById('cashierPaymentBody').innerHTML = html;
+                        document.getElementById('cashierCompleteBtn').dataset.table = tableNum;
+                        document.getElementById('cashierCompleteBtn').dataset.amount = final;
+                        document.getElementById('cashierPrintBtn').dataset.table = tableNum;
+                        document.getElementById('cashierPrintBtn').dataset.amount = final;
+                        document.getElementById('cashierPrintBtn').dataset.items = JSON.stringify(data.items);
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('cashierPaymentModal')).show();
+                    });
+            });
+        }
+    }
 });

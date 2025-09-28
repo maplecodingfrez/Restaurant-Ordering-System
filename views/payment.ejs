@@ -23,7 +23,10 @@
 </head>
 
 <body>
-    <%- include('header.ejs') %>
+        <%- include('header.ejs') %>
+        <script>
+            window.noItems = "<%= noItems ? 'true' : 'false' %>";
+        </script>
         <div class="container mt-4">
             <h2 class="mb-4">ชำระเงิน</h2>
             <form id="paymentForm">

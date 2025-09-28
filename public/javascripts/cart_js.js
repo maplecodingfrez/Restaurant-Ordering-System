@@ -22,13 +22,9 @@ function updateCartWidget() {
     }
 
     cartItemsDiv.innerHTML = cart.map((item, idx) => {
-        let basePrice = item.price || 0;
-        let displayPrice = basePrice;
-        if (item.size === 'L') displayPrice = basePrice * 1.2;
-        else if (item.size === 'S') displayPrice = basePrice * 0.8;
-
-        const itemTotal = displayPrice * item.qty;
-        totalPrice += itemTotal;
+    let displayPrice = item.price || 0;
+    const itemTotal = displayPrice * item.qty;
+    totalPrice += itemTotal;
         return `
         <div class="d-flex align-items-center mb-3">
             <img src="${item.img}" style="width:48px;height:48px;object-fit:cover;" class="me-2 rounded">
