@@ -1,9 +1,22 @@
-function saveCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
+// Helper to remove cart cookie
+function removeCartCookie() {
+    document.cookie = "cart=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }
+function saveCart() {
+    const expires = new Date(Date.now() + 10 * 60 * 1000).toUTCString();
+    document.cookie = "cart=" + encodeURIComponent(JSON.stringify(cart)) + "; expires=" + expires + "; path=/";
+}
+
+function getCookie(name) {
+    const value = "; " + document.cookie;
+    const parts = value.split("; " + name + "=");
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return null;
+}
+
 function loadCart() {
-    const saved = localStorage.getItem('cart');
-    cart = saved ? JSON.parse(saved) : [];
+    const saved = getCookie('cart');
+    cart = saved ? JSON.parse(decodeURIComponent(saved)) : [];
 }
 
 let cart = [];
@@ -114,7 +127,7 @@ document.getElementById('checkoutBtn').addEventListener('click', function () {
         if (data.success) {
             msgBox.innerHTML = `<div class="fw-bold fs-5 text-success">บันทึกออเดอร์เรียบร้อยแล้ว!</div>`;
             cart = [];
-            saveCart();
+            removeCartCookie();
             updateCartWidget();
             setTimeout(() => {
                 bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('cartOffcanvas')).hide();
