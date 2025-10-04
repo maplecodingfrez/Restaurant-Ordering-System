@@ -65,7 +65,7 @@
         </div>
         <div class="col-md-6">
           <h4 class="mt-5 mb-3">รายการชำระผ่าน QR Code</h4>
-          <ul class="list-group">
+          <ul class="list-group" id="qrList">
             <% payments.filter(p => p.method === 'QR' && p.paid === 0).forEach(function(payment) { %>
               <li class="list-group-item d-flex justify-content-between align-items-center payment-row"
                   data-table="<%= payment.table_number %>"
