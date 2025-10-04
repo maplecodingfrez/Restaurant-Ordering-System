@@ -15,7 +15,23 @@
 <body>
     <%- include('header.ejs') %>
     <div class="container mt-4">
-        <h2 class="mb-4">ประวัติการสั่งอาหาร</h2>
+        <% 
+            let overallTotal = 0;
+            orders.forEach(function(order) { 
+                const items = orderItems[order.order_id] || [];
+                items.forEach(function(item) {
+                    let basePrice = item.price || 0;
+                    let itemPrice = basePrice;
+                    if (item.size === 'L') itemPrice = basePrice * 1.2;
+                    else if (item.size === 'S') itemPrice = basePrice * 0.8;
+                    overallTotal += itemPrice * item.quantity;
+                });
+            });
+        %>
+        <h2 class="mb-4 d-flex align-items-center">
+            ประวัติการสั่งอาหาร
+            <span class="ms-auto text-success fs-5">รวมทั้งหมด: <strong><%= overallTotal.toLocaleString('en-US', {minimumFractionDigits: 2}) %> บาท</strong></span>
+        </h2>
         <div class="accordion" id="historyAccordion">
             <% if (orders.length === 0) { %>
                 <div class="text-center text-muted py-5">ไม่มีรายการ</div>
