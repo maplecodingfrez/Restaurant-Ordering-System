@@ -1,7 +1,6 @@
 # Restaurant Ordering System Demo
 
-1. `npm i`
-2. `npm start`
+1. `เปืดไฟล์ start.bat`
 
 # Path to หลังร้าน
 `
