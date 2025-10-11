@@ -1,5 +1,8 @@
 # Restaurant Ordering System Demo
 
+1. `รันตัวของ start.bat ได้เลย`
+   
+# ALT
 1. `npm i`
 2. `npm start`
 
