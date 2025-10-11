@@ -75,3 +75,15 @@ window.socket.on('paymentCompleted', function(data) {
         }, 1800);
     }
 });
+
+document.getElementById('skipPaymentBtn').addEventListener('click', function () {
+    const table_id = document.getElementById('table_id').value;
+    const totalPrice = document.getElementById('totalPrice').textContent.trim().replace(',', '');
+
+    const qrSuccessUrl = `/payment/success?table_id=${table_id}&amount=${totalPrice}`;
+    window.open(qrSuccessUrl, '_blank');
+
+    setTimeout(function () {
+        window.close();
+    }, 500);
+});
