@@ -8,7 +8,7 @@
 
 # Path to หลังร้าน
 `
-url/cashier`
-`url/orders`
-`url/serve
+localhost:3000/cashier`
+`localhost:3000/orders`
+`localhost:3000/serve
 `
